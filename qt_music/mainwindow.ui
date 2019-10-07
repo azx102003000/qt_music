@@ -146,6 +146,9 @@
     <property name="text">
      <string>静音</string>
     </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
    </widget>
    <widget class="QPushButton" name="next_btn">
     <property name="geometry">
@@ -186,7 +189,7 @@
      <string>顺序播放</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>690</x>

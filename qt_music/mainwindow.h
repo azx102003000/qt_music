@@ -17,6 +17,7 @@
 #include <QMediaPlayer>
 #include <QTimer>
 #include <QModelIndex>
+#include <QSystemTrayIcon>
 
 namespace Ui {
 class MainWindow;
@@ -43,6 +44,8 @@ private slots:
     void changevulume(int value);   //音量大小调节0-100
     void time_out();                //超时
     void click_double(QModelIndex index);
+
+    void setmusic_mute();
 private:
     Ui::MainWindow *ui;
     QMediaPlayer *player;
@@ -51,6 +54,16 @@ private:
     int hh,mm,ss;
     long long temp,temp1;
     int hh1,mm1,ss1;
+
+    QAction *nextmusic;
+    QAction *lastmusic;
+    QAction *play_supend;
+    QAction *mutemusic;
+
+    QAction *restoreAction;
+    QAction *quitAction;
+    QMenu *mMenu;
+    QSystemTrayIcon *sysicon;
 };
 
 #endif // MAINWINDOW_H

@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     player->setVolume(80);
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(time_out()));//超时
-    connect(ui->mute_box, SIGNAL(clicked(bool)), this,SLOT(click_mute(bool)));
+    connect(ui->mute_box, SIGNAL(toggled(bool)), this,SLOT(click_mute(bool)));
     connect(ui->next_btn, SIGNAL(clicked(bool)), this, SLOT(click_next()));//下一首
     connect(ui->last_btn, SIGNAL(clicked(bool)), this, SLOT(click_last()));//上一首
     connect(ui->mode_btn, SIGNAL(clicked(bool)), this, SLOT(click_playmode()));//播放模式
@@ -23,8 +23,40 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->supend_btn, SIGNAL(clicked(bool)), this, SLOT(click_suspend()));
     connect(ui->volume_sli, SIGNAL(valueChanged(int)), this, SLOT(changevulume(int)));//音量
     connect(ui->speed_sli, SIGNAL(valueChanged(int)), this, SLOT(slider_move(int)));//进度条
-    connect(ui->listWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(click_double(QModelIndex)));
+    connect(ui->listWidget, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(click_double(QModelIndex)));//双击音乐栏
     ui->volume_sli->setValue(player->volume());
+
+    setWindowIcon(QIcon(":/new/prefix1/img/icon.png"));
+    nextmusic = new QAction("下一首", this);
+    connect(nextmusic, SIGNAL(triggered(bool)),this, SLOT(click_next()));
+    lastmusic = new QAction("上一首", this);
+    connect(lastmusic, SIGNAL(triggered(bool)),this, SLOT(click_last()));
+    play_supend = new QAction("播放",this);
+    connect(play_supend, SIGNAL(triggered(bool)),this,SLOT(click_suspend()));
+    mutemusic = new QAction("静音", this);
+    connect(mutemusic, SIGNAL(triggered(bool)),this, SLOT(setmusic_mute()));
+// 系统托盘
+    restoreAction = new QAction("还原", this);
+    connect(restoreAction, SIGNAL(triggered(bool)), this, SLOT(showNormal()));
+    quitAction = new QAction("退出", this);
+    connect(quitAction, SIGNAL(triggered(bool)),qApp, SLOT(quit()));
+    mMenu = new QMenu;
+    mMenu->addAction(nextmusic);
+    mMenu->addAction(lastmusic);
+    mMenu->addAction(play_supend);
+    mMenu->addAction(mutemusic);
+    mMenu->addSeparator();
+    mMenu->addAction(restoreAction);
+    mMenu->addAction(quitAction);
+
+    sysicon = new QSystemTrayIcon;
+    sysicon->setIcon(QIcon(":/new/prefix1/img/icon.png"));
+    sysicon->setToolTip("music");
+    sysicon->show();
+    sysicon->setContextMenu(mMenu);
+//    qDebug()<<"play" << play_supend->iconText();
+//    qDebug()<<"text " << play_supend->text();
+
 }
 
 MainWindow::~MainWindow()
@@ -34,7 +66,14 @@ MainWindow::~MainWindow()
         player->stop();
         timer->stop();
     }
-
+    delete nextmusic;
+    delete lastmusic;
+    delete play_supend;
+    delete mutemusic;
+    delete restoreAction;
+    delete quitAction;
+    delete mMenu;
+    delete sysicon;
     delete timer;
     delete player;
     delete ui;
@@ -213,6 +252,8 @@ void MainWindow::click_suspend()
             ui->link_lab->setText("链接:"+ui->listWidget->item(0)->text().section('/', -1, -1));
             ui->supend_btn->setText("暂停");
             ui->listWidget->setCurrentRow(0);
+            play_supend->setText("暂停");
+            //mMenu->addAction(play_supend);
         }
     }
     else if(player->state() == QMediaPlayer::PausedState)//暂停状态
@@ -221,6 +262,7 @@ void MainWindow::click_suspend()
         if(!timer->isActive())
         timer->start(500);
         ui->supend_btn->setText("暂停");
+        play_supend->setText("暂停");
     }
     else if(player->state() == QMediaPlayer::PlayingState)//播放状态
     {
@@ -228,6 +270,8 @@ void MainWindow::click_suspend()
         if(timer->isActive())
             timer->stop();
         ui->supend_btn->setText("播放");
+        play_supend->setText("播放");
+
     }
 #if 0
     if(flag)
@@ -531,7 +575,11 @@ void MainWindow::click_next()//下一首
     }
 
 }
-
+//托盘静音信号
+void MainWindow::setmusic_mute()
+{
+    ui->mute_box->isChecked() ? ui->mute_box->setChecked(false) : ui->mute_box->setChecked(true);
+}
 //设置静音
 void MainWindow::click_mute(bool value)
 {
